@@ -1,0 +1,40 @@
+mysql installer 실행 
+Full 선택(나중에 실제 서버에 설치할때는 server만 해도 됨) - Execute
+Next Next
+DB는 3306포트를 쓰니까(거의 공통) 건들지말고 Next Next
+비번 ezen ezen Next Next Next Execute
+--------------------->루트 비번만 잘 적어주면 됨. 까먹으면 절대 X 데이터 못살림.
+Next Finish Next Finish Next Finish
+
+root계정 -> 로컬호스트 3306을 쓰는 관리자 계정 . 반드시 패스워드를 알고있어야 됨. 
+
+MySQL은 한 유저에 여러개의 디비를 생성할 수 있지만
+오라클은 한 유저에 한개의 디비만 생성 가능하다.
+오라클은 내 자체가 하나의 디비라서 디비를 생성할 게 없다.
+MySQL은 디비를 생성해야 함. 오라클과 SQL은 관리하는 개념이 다름
+
+
+DB를 여러개 만들 순 있지만 한번엔 한 DB만 조작이 가능하다.
+
+데이터베이스 이름은 대소문자를 구분하지 않음 (대문자로 써도 소문자로 나옴)
+
+GRANT OPTION => 제어 권한, 원래 권한은 root만 줄 수 있는데, 권한 줄 수 있는 권한을 주는 것.
+
+환경변수 편집 Path -> 새로 만들기 -> 찾아보기 -> C:\Program Files\MySQL\MySQL Server 8.0\bin
+
+환경변수는 다른 프로그램과 connection이 되도록 하려면 해야 함.
+
+C:\Users\EZENIC-143>mysql --version
+mysql  Ver 8.0.39 for Win64 on x86_64 (MySQL Community Server - GPL)
+
+C:\Users\EZENIC-143>mysql -umysqlUser -pmysql   (아이디 및 패스워드)
+mysql>
+	show databases;
+	use testdb; (너가 지금 조작하고 싶은 db는 testdb지 나는 지금 testdb에 대한 명령어만 실행해 줄거야)
+	show tables;
+Empty set (0.00 sec)
+
+카페에 있는 수업 자료  -> '[스마트웹&콘텐츠개발]-데이터베이스_java' 는 정보 처리 기사 필기에 나오는 내용들임
+
+스키마란 : 데이터베이스의 구조, but mysql에서는 DB자체를 스키마라고 함.
+
