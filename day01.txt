@@ -120,11 +120,11 @@ desc 테이블 명;
 insert into 테이블명(필드명, 필드명)
 values(값, 값);
 
-insert into test1(name, address) values('hong', 'seoul');
-insert into test1(name, address) values('kim', 'suwon');
-insert into test1(name, address) values('lee', 'seoul');
-insert into test1(name, address) values('choi', 'seoul');
-insert into test1(name, address) values('park', 'incheon');
+insert into test1(name, address) values('hong', 'seoul'),
+('kim', 'suwon'),
+('lee', 'seoul'),
+('choi', 'seoul'),
+('park', 'incheon');
 
 -- 내용확인
 select * from test1;
@@ -218,11 +218,11 @@ major varchar(20),
 primary key(num)
 )
 insert into student values
-(111, 'kim', 23, 'seoul', 'korean'),
-(222, 'lee', 24, 'incheon', 'computer'),
-(333, 'pack', 22, 'suwon', 'english'),
-(444, 'choi', 23, 'jeju', 'math'),
-(555, 'jeong', 21, 'busan', 'management') ;
+(111, '신태오', 23, 'seoul', 'korean'),
+(222, '지지우', 24, 'incheon', 'computer'),
+(333, '최한결', 22, 'suwon', 'english'),
+(444, '태은찬', 23, 'jeju', 'math'),
+(555, '차영호', 21, 'busan', 'management') ;
 
 -- student 테이블 변경
 score default 0 속성 추가
@@ -238,11 +238,11 @@ update student set score=88 where num = 444;
 update student set score=75 where num = 555;
 
 insert into student values
-(666, 'kim', 22, 'busan', 'math', 77),
-(777, 'pack', 22, 'ulsan', 'management', 88),
-(888, 'ji', 22, 'seoul', 'korean', 99),
-(999, 'cha', 22, 'incheon', 'korean', 66),
-(1111, 'um', 22, 'incheon', 'math', 71);
+(666, '마연우', 24, 'busan', 'math', 77),
+(777, '신예준', 26, 'ulsan', 'management', 88),
+(888, '심시윤', 27, 'seoul', 'korean', 99),
+(999, '민준영', 28, 'incheon', 'korean', 66),
+(110, '황수호', 29, 'incheon', 'math', 71);
 
 -- score가 높은 사람 순으로 정렬
 select * from student
