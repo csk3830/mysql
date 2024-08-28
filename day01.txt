@@ -1,0 +1,274 @@
+1. 관계형 데이터 베이스
+속성 : 정보처리산업기사, SQLD 둘 다 아주 자주 나옴. 속성이 뭐냐?
+
+GROUP BY와 HAVING 은 한 세트
+HAVING은 없을 수 있다. 하지만 GROUP BY없는 HAVING은 존재할 수 X.
+
+
+day01-DB
+// sql접속 => cmd
+mysql -umysqlUser -pmysql
+
+show databases;   // 내 권한이 있는 db만 보여줌.   
+
+//사용할 DB 선택
+use testdb
+
+exit => root로 재접속
+
+//유저 생성 => root계정에서만 가능
+mysql -uroot -pezen
+
+//mysql이 user를 관리하는 테이블로 이동
+use mysql;
+
+//user 생성 구문
+//create user '유저아이디'@'localhost' identified by '비밀번호'; 
+create user 'mysqlUser2'@'localhost' identified by 'mysql'; 
+
+//권한 부여
+//testdb를 지지고 볶고 할 수 있는 모든 권한에 대한 값을 주겠다.
+grant * privileges on testdb.* to 'mysqlUser2'@'localhost' with grant option;  => with grant option은 선택사항.
+grant select, insert, update privileges on testdb.* to 'mysqlUser2'@'localhost' with grant option;  => with grant option은 선택사항.
+
+//권한 적용
+flush privileges;
+
+//유저 확인
+select user, host from user;
+
+----------------------------------
+mysqlUser로 변경
+table 생성
+
+mysql 데이터 자료형
+숫자
+(정수)
+- BIT(m) : 1~64 binary값을 지정
+- BOOL : TRUE(1) / FALSE(0)		= TINYINT(1)
+- TINYINT(m) : 0~255사이의 작은 수를 표현 (-128~127)
+- SMALLINT(m) : 2BYTE 0~65536 (-32768 ~ 32767)
+- MEDIUMINT(m) : 3BYTE (0~166777215)
+- INT(m) : 4BYTE => java int 동일
+- BIGINT : 8BYTE => java long 동일
+
+(실수) =>
+- FLOAT(m, d) : 정밀도가 작은 부동소수점 표현(d : 자리수)
+- DOUBLE(m, d) : 정밀도가 큰 부동소수점 표현(d : 자리수)
+=> mysql 8.0.17 이후부터 사용하지 않음
+
+- DECIMAL(m,d) : 고정 소수점 표현
+
+문자
+- CHAR(m) : 고정길이 문자열(0~255)
+- VARCHAR(m) : 가변길이 문자열 (0~65536)
+- TINYTEXT : 가변길이 1BYTE 문자열 저장
+- BLOB : 바이너리 데이터 저장용 (이미지) (TINYBLOB, MEDIUMBLOB 등등 있음)
+- TEXT : 2Byte 가변길이 문자열
+- MEDIUMTEXT : 3BYTE
+- LONGTEXT : 4BYTE
+
+날짜
+- DATE : 날짜표현
+- DATETIME : 날짜+시간 => 가장많이 씀
+- TIMESTAMP : insert, update 연산에 유리한 형태
+- YEAR : 연도만
+- TIME : 시간만
+
+제약조건
+PK : PRIMARY KEY => 기본키 속성 추가
+NN : Not Null (데이터 값으로 null을 오지 못하게 막음)
+AI : Auto_Increment (자동증가 : 정수만 가능) 	=> MySQL에서만 씀. 오라클엔 없다.
+UQ : unique (중복안됨)
+B : binary 값
+UN : Unsigned (음수 불가)
+ZF : Zero Fill (숫자 앞에 0으로 채우기) ex) 0001
+G : Generated (속성 자동생성)
+
+기본값 : 기본값을 주지않고 값이 없으면 null
+default 값
+
+- null 은 연산이 안됨.
+
+주석 : 단축키 안됨.
+/* 여러줄 주석 */
+-- 한줄주석
+
+
+-- 테이블 생성 구문
+테이블명: test1
+속성 :
+- id int ai pk
+- name varchar(10) not null
+- age int default 20 (기본값 20)
+- address varchar(20)
+
+create table test1(
+id int auto_increment,
+name varchar(10) not null,
+age int default 20,
+address varchar(20),
+primary key(id));
+
+-- 테이블 확인
+show tables;
+
+-- 테이블 구조 확인
+desc 테이블 명;
+
+-- 데이터 추가 구문
+insert into 테이블명(필드명, 필드명)
+values(값, 값);
+
+insert into test1(name, address) values('hong', 'seoul'),
+('kim', 'suwon'),
+('lee', 'seoul'),
+('choi', 'seoul'),
+('park', 'incheon');
+
+-- 내용확인
+select * from test1;
+
+-- 테이블 생성
+테이블 명 : test2
+속성
+- 학번(num) 숫자 => 111, 222...
+- 이름(name) 문자
+- 학과(dep) 문자
+- 주소(addr) 문자
+- 전화번호(tel) 문자
+
+-- 데이터 추가 (5명)
+
+create table test2(
+num int,
+name varchar(20) not null,
+dep varchar(20),
+addr varchar(20),
+tel varchar(20),
+primary key(num)
+);
+
+INSERT INTO test2 VALUES
+(111, '홍길동', '컴퓨터공학과', '서울', '010-1234-1234'),
+(222, '김길순', '생물학과', '인천', '010-4321-1114'),
+(333, '박순이', '기계공학과', '수원', '010-1004-1004'),
+(444, '오뚝이', '경영학과', '부산', '010-5555-4444'),
+(555, '최짱구', '약학과', '제주', '010-6666-7777'),
+(666, '이살구', '수의학과', '전주', '010-7777-8989');
+
+-- 테이블 구조 변경
+- age를 int로 추가
+alter table 테이블명 add(추가) 필드명 속성;
+alter table 테이블명 change(수정) 필드명 변경필드명 속성;
+-> alter table test2 change aag age int default 20 after name;
+
+add(추가), modify(수정), change(수정:이름변경가능), drop(삭제)
+마지막에 추가
+alter table test2 add age int default 20 after name;
+
+특정 필드 뒤에 추가 (after) 
+- age를 name 뒤에 위치
+alter table test2 modify age int default 20 after name;
+
+-- 테이블 명 변경
+- rename table 변경전 to 변경후
+
+-- kim, pack의 나이를 21로 변경
+update 테이블명
+set 변경필드 = 값
+where 조건
+
+update test2
+set age = 21
+where name='kim' or name='pack';
+↑↓둘다 가능
+where name in ('kim', 'pack');
+
+-- test1 phone 추가 varchar(20)
+alter table test1 add phone varchar(20);
+
+update test1 set phone = '010-1111-2222' where name ='hong' ;
+update test1 set phone = '010-4444-5678' where name ='kim' ;
+update test1 set phone = '010-3333-5432' where name ='lee' ;
+update test1 set phone = '010-2222-2222' where name ='choi' ;
+update test1 set phone = '010-1234-5678' where name ='park' ;
+
+-- test1 테이블에서 address가 seoul인 학생만 출력
+select * from test1 where address = 'seoul';
+
+select name, age, address, phone from test1 where address = 'seoul';
+
+---------------------------------------
+-- 테이블 생성
+테이블 명 : student
+num => 111,222 pk
+name => nn
+age => default 20
+address => 주소
+major => 학과
+
+5명의 데이터 추가
+create table student(
+num int,
+name varchar(20) not null,
+age int default 20,
+address varchar(20),
+major varchar(20),
+primary key(num)
+)
+insert into student values
+(111, '신태오', 23, 'seoul', 'korean'),
+(222, '지지우', 24, 'incheon', 'computer'),
+(333, '최한결', 22, 'suwon', 'english'),
+(444, '태은찬', 23, 'jeju', 'math'),
+(555, '차영호', 21, 'busan', 'management') ;
+
+-- student 테이블 변경
+score default 0 속성 추가
+
+
+--점수를 포함한 5명의 데이터 추가로 저장
+alter table student add score int default 0;
+
+update student set score=80 where num = 111;
+update student set score=90 where num = 222;
+update student set score=70 where num = 333;
+update student set score=88 where num = 444;
+update student set score=75 where num = 555;
+
+insert into student values
+(666, '마연우', 24, 'busan', 'math', 77),
+(777, '신예준', 26, 'ulsan', 'management', 88),
+(888, '심시윤', 27, 'seoul', 'korean', 99),
+(999, '민준영', 28, 'incheon', 'korean', 66),
+(110, '황수호', 29, 'incheon', 'math', 71);
+
+-- score가 높은 사람 순으로 정렬
+select * from student
+order by score desc;
+
+--------------------------------------------
+select : 데이터를 조회할 때 사용
+select 컬럼명 from 테이블명
+where 조건
+
+--------------------------------------------
+-- major가 computer인 학생만 출력
+select * from student where major='computer';
+-- 나이가 23 이상인 학생만 검색
+select * from student where age>=23;
+-- 점수가 80점 이상인 학생만 검색
+select * from student where score >= 80;
+-- 주소가 seoul인 학생만 검색
+select * from student where address = 'seoul';
+-- 점수가 70점 미만인 학생만 검색
+select * from student where score <70;
+-- 점수가 70~90 사이인 학생만 검색(between)
+select * from student where score between 70 and 90;
+-- 주소가 'seoul' 'incheon'인 학생만 검색(in)
+select * from student where address in ('seoul', 'incheon');
+-- 김씨인 학생만 검색(like)
+select * from student where name like '김%';
+-- 점수가 70~90 사이인 학생만 검색 점수가 높은 순으로 검색
+select * from student where score between 70 and 90 order by score desc;

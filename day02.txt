@@ -1,0 +1,310 @@
+day02 DB
+
+DDL : 생성과 관련된 명령
+- DB생성, 테이블생성, 구조변경, 삭제
+
+DML : 테이블 안의 데이터를 조작하는 명령
+- select, insert, update, delete
+- join
+
+DCL : 데이터베이스 관리(보안, 병행, 유저)
+
+----------------------------------
+mysqlUser로 접속
+
+testdb 사용상태.
+
+- score가 90이상인 학생 이름만 출력
+select name (as) 성적우수자 from student where score>=90;
+
+- 별칭(alias) : 필드명의 이름을 별도로 주거나, 테이블의 이름, 서브쿼리
+내가 원하는 이름을 붙여서 사용
+- 별칭 키워드 : as (생략가능)
+- 별칭 이름에 띄어쓰기가 있다면 반드시 "" 혹은 '' 묶어서 사용 ('성적 우수자')
+- 칼럼(필드)의 별칭은 where절에서 사용불가(테이블이름, 서브쿼리의 별칭은 where절에서 사용가능)
+
+select * from student (as) s where s.score >=90;
+
+- student 테이블의 학과 목록 출력 (중복되는 과목은 하나만 출력)
+중복제거(distinct) 
+학과만 출력
+major를 학과라는 alias로 출력
+
+select distinct major as '학과' from student;
+----------------------------------------
+비교연산자 ( >, <, >=, <=, =(같다), <>(같지않다)) 	=> 변수가 없으므로 =을 하나만 씀
+산술연산자 ( +, -, *, / ) 나머지 연산자는 mod 함수로 사용 (%는 like뒤에서 모든걸 뜻하는 기호로 씀)
+- 산술연산에 null값이 포함되어 있다면 null은 계산 안함
+논리연산자(and, or, not) 
+우선순위 ( )
+
+----------------------------------------
+- 모든 학생의 나이를 1살씩 업데이트 하시오.
+update student set age = age+1;
+※DB에서는 축약형 연산자 +=  ++ 쓸 수 없음.
+
+- 나이가 25살인 학생들은 삭제
+delete from student where age=25;
+
+- 3명의 신입생 데이터를 추가
+insert into student values
+(112, '김순이', 21, 'suwon', 'korean', 94),
+(113, '한예리', 21, 'busan', 'korean', 84),
+(114, '한재희', 21, 'seoul', 'computer', 64);
+
+- 나이가 24살인 튜플만 student_4 테이블로 복사(이동)
+1. student_4 테이블을 현재 테이블 구조와 같은 구조로 생성
+create table ( if not exists) 새테이블명 like 원본테이블;
+=> 원본 테이블의 구조를 복사하여 새 테이블 생성
+=> if not exists : 만약 테이블이 없다면 생성    
+=> if exists : 있다면 
+=> (if not exists와 if exists는 자바에서도 쓰임)
+create table if not exists student_4 like student;
+
+2. age = 24 튜플만 student_4 테이블로 복사(이동)
+insert into 구문을 활용
+=> values(추가할 값들...)
+=> select * from student where age = 24;
+insert into student_4 (select * from student where age = 24);
+
+3. 기존 테이블에 이동된 데이터를 삭제
+delete from student where age=24;
+
+4. 나머지 튜플의 age를 +1 증가
+update student set age=age+1;
+
+--------------------------------------------
+if문, case ~ when~ than 문
+if(조건식, 참, 거짓) 
+if(조건식, 참, if(조건식, 참, 거짓))
+
+case
+when 조건 then 값
+when 조건 then 값
+when 조건 then 값
+when 조건 then 값
+...
+else 값
+end;
+
+*DB는 if문보다는 case when then을 많이 사용한다.(특히 오라클에선 더 많이 사용함)
+
+student 테이블에 grade(학년)를 추가 (int)
+테이블의 학년 업데이트
+조건에 맞춰서 업데이트
+21=1	22=2	23=3	24=4
+
+alter table student add grade int;
+
+update student set grade =
+case
+    WHEN age = 21 THEN 1
+    WHEN age = 22 THEN 2
+    WHEN age = 23 THEN 3
+    WHEN age >= 24 THEN 4
+end;
+
+- student 테이블에서 grade가 4인 학생만 student_4 테이블로 이동
+insert into student_4 
+select num, name, age, address, major, score from student where grade=4;
+delete from student where grade=4;
+----------------------------------------------------------------
+집약과 정렬
+집약 : 열의 데이터를 합계, 평균 같은 집계값을 구하기 위한 함수
+- count : 검색된 행의 개수
+- sum : 합계
+- avg : 평균
+- max : 최대값
+- min : 최소값
+- group by : 특정 필드를 기준으로 묶음
+- having : 그룹의 조건
+- order by : 정렬. 기준을 여러개 줄 수 있음.
+	각 정렬 기준마다 asc, desc인지 결정해줘야 함.
+- limit : 시작번지, 개수 => 시작번지부터 개수만큼 추출
+----------------------------데이터 더 추가하기-----------
+insert into student(num, name, age, address, major, score)
+values(1001,'홍길동',23,'suwon','korean',89);
+insert into student(num, name, age, address, major, score)
+values(1002,'김길성',24,'seoul','english',87);
+insert into student(num, name, age, address, major, score)
+values(1003,'이순신',22,'suwon','computer',57);
+insert into student(num, name, age, address, major, score)
+values(1004,'박웅',23,'incheon','english',67);
+insert into student(num, name, age, address, major, score)
+values(1005,'이정희',21,'incheon','math',97);
+insert into student(num, name, age, address, major, score)
+values(1006,'최명화',23,'seoul','korean',67);
+insert into student(num, name, age, address, major, score)
+values(1007,'정지호',22,'jeju','computer',77);
+insert into student(num, name, age, address, major, score)
+values(1008,'김주호',23,'seoul','management',84);
+insert into student(num, name, age, address, major, score)
+values(1009,'김동주',24,'incheon','computer',99);
+------------------------------------------------------------
+
+- 성적으로 상위 3명만 나타내기
+select * from student order by score desc limit 0,3;
+
+- 학과가 computer인 인원수
+select count(major) as 'com_count' from student where major='computer';
+이렇게 하는 것보다 alias를 많이 씀(보기 안좋으므로)
+
+- 각 학과의 인원수(group 써야 함)
+select major, count(major) as '학과별인원수' from student group by major;
+=> count(*)을 써도 상관 없지만, 데이터가 많아질 수록 성능 이슈가 있을 수 있으므로 내가 검색하고자 하는 행을 넣어주는게 좋음.
+
+- 각 학과별 점수 합계
+select major, count(major) as '학과별인원수', sum(score) as '학과별 점수합계'
+from student
+group by major
+order by major asc;
+
+--  DB에서는 축약형 연산자 +=  ++ 쓸 수 없음.
+--------------------------------------------------------------
+student 테이블에서 다음 조건을 수행
+
+1. major가 'computer'인 학생 검색(모든 데이터 검색)
+select * from student where major='computer';
+
+2. major가 'computer'이고, score가 70점 이상인 학생 검색
+  - 이름만 검색 / 별칭으로 컴공성적우수생
+select name as '컴공성적우수생', score from student where score >=70 and major='computer';
+
+3. score 70~90 사이인 학생 수
+select count(score) as '성적 70~90사이' from student where score between 70 and 90; 	//and로 써도 됨
+
+4. suwon / seoul에 사는 학생만 검색
+select * from student where address in ('suwon', 'seoul');  	//or로 써도 됨
+
+5. 지역을 중복없이 출력
+select distinct address from student; 
+
+6. 성이 박씨인 학생 검색
+select * from student where name like '박%';
+
+7. 김주호 학생의 major를 english로 변경
+update student set major='english' where name='김주호';
+
+8. 김길성 학생 데이터 삭제
+delete from student where name='김길성';
+-----------------------------------------------------------------
+1. 주소별 인원수 (주소, 인원수 출력) 
+select address, count(address) as '인원수' from student group by address;
+
+2. major가 computer인 score 합계(major, 합계 출력)
+select major, sum(score) as '합계' from student where major='computer';
+
+3. 각 학과별 score 합계와 평균 (major, 합계, 평균 출력)
+select major, sum(score) as '합계', round(avg(score),1) as '평균' from student group by major;
+//round 함수를 써서 소수점 한자리 까지만 나타냄
+
+4. 성적이 90점 이상인 학생들을 별도 저장하는 테이블을 생성
+테이블명 = student_best
+create table if not exists student_best like student;
+
+5. 성적이 90점 이상인 학생들만 복사(delete는 안해도됨)
+insert into student_best
+select * from student where score >= 90;
+
+6. 주소별 인원수가 3이상인 주소를 출력
+- 그룹의 결과가 5이상인 값을 출력
+- 그룹의 조건 having
+select address, count(address) c from student 
+group by address
+having c >= 3;
+-----------------------------------------------------------------
+SQL 내장함수
+- 산술연산 ( + - * / )
+- mod(값, 값2) : 값을 값2로 나눈 나머지
+- round(값, 자리수) : 반올림
+- ceil(값) : 올림 / floor(값): 내림	=> 이 둘은 자리수 지정 X
+- sqrt : 제곱근 / pow : 제곱
+
+문자열 함수
+- concat(str, str2) : 문자열 연결 +연결연산자 없음.
+- length(str) : 문자열의 길이 (영어1, 한글은 2)
+- char_length(str) : 글자수로 인지 (한글 영어 무조건 1)
+- substr(str, start, count) : 시작 위치부터 개수만큼 추출(1부터 시작)
+- left(str, 개수) : 왼쪽에서 개수만큼 추출
+- right(str, 개수) : 오른쪽에서 개수만큼 추출
+- mid(str, 시작위치, 개수) : 지정 위치부터 개수만큼 추출
+- replace(str, old, new) : 문자열에서 old문자를 찾아 new 문자로 변경
+- insert(str, 위치, 길이, 삽입할 문자) : 문자에서 위치의 길이만큼 지우고 삽입
+- ucase : 대문자로변환 / lcase : 소문자로 변환
+- space(숫자) : 숫자만큼 공백추가
+- trim(str) : 공백제거 / ltrim / rtrim 
+- trim(both '-' from '----------abcd------')
+- both(양쪽) / leading(앞) / trailing(뒤)
+- lpad(문자, 총길이, 채울문자)/ rpad : 앞,뒤쪽에 총길이만큼 채울 문자를 삽입
+- repeat(문자열,횟수) : 문자열을 횟수만큼 반복
+- reverse(문자열) : 문자열을 거꾸로 출력
+
+ex) 010101-1234567 => 010101-1******
+select rpad( left('010101-1234567', 8),14,'*');
+
+날짜함수
+- adddate / subdate : 날짜를 기준으로 ~후, ~전의 날짜
+adddate(date, interval 5 day)
+interval 뒤쪽 값 : year, month, day, hour, minute, second 가능
+
+- curdate(), curtime(), now(), sysdate() : 오늘날짜 / 시간
+- addtime/subtime : 시간을 더하고 뺀 결과
+addtime('날짜/시간', '시:분:초')
+- year(날짜) / month / day / hour / minute / second
+: 년월일시분초 추출
+- date(날짜) / time(시간) : 날짜/시간 추출
+- datediff(date1, date2) / timediff : date2에서 date1까지 남은기간 (d-day)
+- dayofweek(date) : 요일 (일=1, 월=2...)
+- monthname(date) : 월을 영어로 리턴
+- dayofyear(date) : 1년중 몇일이 경과했는지 리턴
+- last_day(date) : 해당 날의 월이 몇일까지 있는지 확인
+- time_to_sec(time) : 시간을 초단위로 변환
+
+논리함수
+- if(조건식, 참, 거짓)
+- if(조건식, 참, if(조건식, 참, 거짓));
+- case ~ when ~ then
+case
+when 조건 then 값
+when 조건 then 값
+when 조건 then 값
+else 값
+end;
+
+select if(10 > 5, 't', 'f');
+
+사용자 정의 변수 사용
+SET @변수이름 := 값;
+
+정보함수
+- user(), current_user(), session_user() : 현재 사용자
+- database(), schema() : 사용중인 db명 리턴
+----------------------------------------------------------
+student 테이블에서 다음 값을 처리
+1. 등급을(ranking) 칼럼을 추가
+alter table student add ranking varchar(10);
+
+2. score에 따라 ranking A/B/C 값을 추가
+80 이상이면 A / 60 이상이면 B / 나머지는 C
+update student set ranking =
+case
+when score>=80 then 'A'
+when score>=60 then 'B'
+else 'C'
+end;
+
+3. ranking별 인원수 출력
+select ranking, count(*) from student group by ranking;
+
+4. 전체 student 데이터 출력
+name의 형식을 => 홍O동 (글자의 두번째 이름에 동그라미 표현)
+select num, insert(name, 2, 1, 'O'), age, address, major, score, grade, ranking from student;
+
+5. student 테이블의 성적이 1~3등까지만 출력
+select * from student order by score desc limit 3;
+
+6. 학과의 인원수가 3명 미만인 학과를 출력
+
+
+
+
