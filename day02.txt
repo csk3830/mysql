@@ -282,7 +282,7 @@ SET @변수이름 := 값;
 ----------------------------------------------------------
 student 테이블에서 다음 값을 처리
 1. 등급을(ranking) 칼럼을 추가
-alter table student add ranking varchar(10);
+alter table student add ranking varchar(5);
 
 2. score에 따라 ranking A/B/C 값을 추가
 80 이상이면 A / 60 이상이면 B / 나머지는 C
@@ -294,17 +294,24 @@ else 'C'
 end;
 
 3. ranking별 인원수 출력
-select ranking, count(*) from student group by ranking;
+select ranking, count(ranking) from student
+group by ranking
+order by ranking;
 
 4. 전체 student 데이터 출력
 name의 형식을 => 홍O동 (글자의 두번째 이름에 동그라미 표현)
-select num, insert(name, 2, 1, 'O'), age, address, major, score, grade, ranking from student;
+select num, insert(name, 2, 1, 'O'), age, address, major, score, grade, ranking
+from student;
 
 5. student 테이블의 성적이 1~3등까지만 출력
-select * from student order by score desc limit 3;
+select * from student
+order by score desc
+limit 0, 3;
 
 6. 학과의 인원수가 3명 미만인 학과를 출력
-
+select major, count(*) c from student
+group by major
+having c < 3;
 
 
 

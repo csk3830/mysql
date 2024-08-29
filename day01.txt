@@ -129,6 +129,7 @@ insert into test1(name, address) values('hong', 'seoul'),
 -- 내용확인
 select * from test1;
 
+
 -- 테이블 생성
 테이블 명 : test2
 속성
