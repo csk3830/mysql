@@ -353,7 +353,6 @@ where s.su_title = '대학수학';
 1. at_mid, at_final, at_attend, at_hw 값 업데이트
 40 40 10 10
 
-
 update attend set at_mid=40, at_final=40, at_attend=10, at_hw=9
 where at_num in (1,9,15);
 update attend set at_mid=38, at_final=35, at_attend=8, at_hw=7
@@ -587,7 +586,7 @@ WHERE st.st_name = '김영철';
 
 ---------------------------
 index : 인덱스
-데이터 베이스에서 조회할 때 결과를 빠르게 추출하도록 도와주는 키
+데이터 베이스에서 조회할 때 결과를 빠르게 추출하도록 도와주는 키.
 기본키가 아닌 일반 키에 대해 조회를 많이 하면, 
 인덱스 추가를 고려해 볼 수 있음.
 - 추가적인 DB공간이 필요 (10%)

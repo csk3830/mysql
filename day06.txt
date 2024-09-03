@@ -135,5 +135,266 @@ begin
 end $$
 delimiter ;
 
+매개변수
+IN / OUT / INOUT
+IN : 프로시저에 값을 전달
+  - 원본값을 프로시저가 끝난 후에도 유지되고, 프로시저는 in 파라미터의 복사본을 사용
+
+OUT : 리턴 값
+
+INOUT : 호출자에 의해 하나의 변수가 초기화되고, 프로시저에 의해 수정 + 호출자에게 리턴
+---------------------------------------------
+--프로시저 => product / buy 테이블 이용
+제품명을 입력하면 그 제품을 구매한 customer를 리턴
+폴라 티셔츠 제품을 입력하면
+=> 그 제품을 구매한 손님 리스트를 리턴
+프로시저명 : select_buy
+매개변수 : 제품명 (in in_product_name)
+
+drop procedure if exists select_buy;
+delimiter $$
+create procedure select_buy(in in_product_name varchar(100))
+begin
+select customer from buy
+where product_name = in_product_name;
+end $$
+delimiter ;
+
+-- 호출
+call select_buy('폴라 티셔츠');
++----------+
+| customer |
++----------+
+| 이시연   |
+| 홍길동   |
++----------+
+-----------------------------------------------
+--구매 금액이 10만원 이상인 손님이름과 구매가격을 출력
+손님이름이 같은 이름이면 합산
+프로시저명 : select_10
+
+drop procedure if exists select_10;
+delimiter $$
+create procedure select_10()
+begin
+  select customer, sum(total)
+  from buy
+  group by customer
+  having sum(total)>=100000;
+end $$
+delimiter ;
+
+call select_10();
++----------+------------+
+| customer | sum(total) |
++----------+------------+
+| 하남일   |    1050000 |
+| 송슬기   |     150000 |
+| 조아람   |     180000 |
+| 고윤서   |     270000 |
+| 홍길동   |     300000 |
++----------+------------+
+
+--프로시저명 : select_total(100)
+   => 구매합산 100만원 이상 명단 (손님이름과 구매가격 합산)
+drop procedure if exists select_total;
+delimiter $$
+create procedure select_total(in in_total int)
+begin
+  select customer, sum(total)
+  from buy
+  group by customer
+  having sum(total)>=in_total*10000;
+end $$
+delimiter ;
+
+call select_total(100);
++----------+------------+
+| customer | sum(total) |
++----------+------------+
+| 하남일   |    1050000 |
++----------+------------+
+--------------------------------------------
+특정 제품을 구매한 인원수(구매 횟수)를 리턴하는 프로시저 작성
+프로시저명 : count_buy
+매개변수 : in 제품명, out 개수
+--out 변수에 값을 저장할 때 : into
+drop procedure if exists count_buy;
+delimiter //
+create procedure count_buy(
+in in_product_name varchar(100),
+out out_cnt int
+)
+begin
+  select count(product_name) into out_cnt
+  from buy
+  where product_name = in_product_name;
+end //
+delimiter ;
+
+call count_buy('피트니스상의',@cnt);
+select @cnt as '판매횟수';
+
+mysql> call count_buy('피트니스상의',@cnt);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select @cnt as '판매횟수';
++----------+
+| 판매횟수 |
++----------+
+|        2 |
++----------+
+
+----------------------------------------------
+변수
+set @변수명 := 값;		=> 전역변수
+select @변수명; 	=> 변수값 확인
+
+트리거나 프로시저 내에서 사용하는 declare를 사용하여 
+선언하는 변수는 (지역변수 개념)
+
+트리거나 프로시저 내에서는 (@변수) 전역변수를 사용할 수 없음.
+지역변수는 _지역변수명 전역변수 @전역변수명
+
+-------------------------------------------------
+특정 제품의 판매수량(amount) 합계를 리턴하는 프로시저 작성
+프로시저명 : sum_amount
+drop procedure if exists sum_amount;
+delimiter $$
+create procedure sum_amount(
+in in_product_name varchar(100),
+out out_sum int
+)
+begin
+  select sum(amount) into out_sum
+  from buy
+  group by product_name
+  having product_name = in_product_name;
+end $$
+delimiter ;
+
+call sum_amount('피트니스상의',@sum);
+select @sum as '판매수량';
++----------+
+| 판매수량 |
++----------+
+|       22 |
++----------+
+
+--------------------------------------------------
+college 데이터베이스 이용
+
+student 테이블의 st_point(이수학점) 업데이트 하시오.
+- 학점을 취득하려면 at_repetition = n (y는 재수강이기 때문에 학점을 주지 않으므로 미포함)
+
+- 학점은 attend 테이블에 수강한 과목의 at_co_num를 확인
+- course에서 co_su_num  =>  subject 테이블에서 su_point 확인
+- 해당 과목의 su_point 확인 후
+- attend 테이블의 같은 학번에 대한 su_point 합계를 st_point에 업데이트
+
+- 프로시저 작성
+call update_stpoint(학번); 	//한 학생의 st_point 업데이트
+call update_stpointall(); 	//모두 한번에 업데이트
+ 
+
+drop procedure if exists update_stpoint;
+delimter //
+create procedure update_stpoint(
+in in_st_num int
+)
+begin
+declare _sum int default 0;
+select sum(su.su_point) into _sum
+from subject su
+join course c on su.su_num = c.co_su_num
+join attend a on a.at_co_num = c.co_num
+join student s on s.st_num = a.at_st_num
+where a.at_repetition = 'n' and s.st_num = in_st_num;
+
+update student set st_point = _sum
+where st_num = in_st_num;
+
+select * from student;
+
+end //
+delimiter ;
+
+
+
+drop procedure if exists update_stpoint;
+delimiter //
+create procedure update_stpoint(
+in in_st_num int)
+begin
+declare _sum int default 0;
+select sum(su.su_point) into _sum 
+from subject su
+join course c on su.su_num = c.co_su_num
+join attend a on a.at_co_num = c.co_num
+join student s on s.st_num = a.at_st_num
+where a.at_repetition = 'n' and s.st_num = in_st_num;
+update student set st_point = _sum
+where st_num = in_st_num;
+select * from student;
+end //
+delimiter ;
+
+
+--그룹을 줬을 시
+select sum(su.su_point) into _sum 
+from subject su
+join course c on su.su_num = c.co_su_num
+join attend a on a.at_co_num = c.co_num
+join student s on s.st_num = a.at_st_num
+where a.at_repetition = 'n' and s.st_num = in_st_num;
+
+
+call update_stpoint(2020123002);
++------------+---------+---------+----------+
+| st_num     | st_name | st_term | st_point |
++------------+---------+---------+----------+
+| 2020123001 | 김영철  |       1 |       12 |
+| 2020123002 | 나영희  |       1 |        7 |
+| 2020160001 | 강철수  |       2 |       12 |
+| 2020160002 | 박철수  |       2 |       12 |
+| 2020456001 | 강군    |       2 |       12 |
++------------+---------+---------+----------+
+
+-------------------------------------------
+drop procedure if exists update_stpointall;
+delimiter //
+create procedure update_stpointall()
+begin
+update student st 
+join(
+  select a.at_st_num, sum(s.su_point) as total_point
+  from subject s
+  join course c on s.su_num = c.co_su_num
+  join attend a on a.at_co_num = c.co_num
+  where a.at_repetition = 'n'
+  group by a.at_st_num
+) sp on st.st_num = sp.at_st_num
+set st.st_point = sp.total_point;
+select * from student;
+end //
+delimiter ;
+
+-------같은 결과
+update student set st_point = (
+select sum(s.su_point) from subject s
+join course c on s.su_num = c.co_su_num
+join attend a on a.at_co_num = c.co_num
+where a.at_repetition='n' and a.at_st_num = st_num
+group by a.at_st_num);
+
++------------+---------+---------+----------+
+| st_num     | st_name | st_term | st_point |
++------------+---------+---------+----------+
+| 2020123001 | 김영철  |       1 |       15 |
+| 2020123002 | 나영희  |       1 |        7 |
+| 2020160001 | 강철수  |       2 |       10 |
+| 2020160002 | 박철수  |       2 |       13 |
+| 2020456001 | 강군    |       2 |        8 |
++------------+---------+---------+----------+
 
 
